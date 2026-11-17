@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>LAN-Spielewünsche</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: schmale Handy-Spalte, Spielkacheln als Liste, feste Leiste unten mit Zähler und Senden */
+:root{
+  --bg:#eef1f6; --flaeche:#ffffff; --fg:#141a26; --leise:#5b6578; --linie:#d5dbe6;
+  --akzent:#1f6feb; --akzent-fg:#ffffff; --bereit:#1a7f4b; --fehlt:#b4561b; --wa:#1f9d55;
+  --display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --text:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e131d; --flaeche:#161d2b; --fg:#e7ecf5; --leise:#9aa5ba; --linie:#28324a;
+  --akzent:#5b9dff; --akzent-fg:#0b1020; --bereit:#4cc488; --fehlt:#f0975a; --wa:#3cc275; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131d; --flaeche:#161d2b; --fg:#e7ecf5; --leise:#9aa5ba; --linie:#28324a;
+  --akzent:#5b9dff; --akzent-fg:#0b1020; --bereit:#4cc488; --fehlt:#f0975a; --wa:#3cc275; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--text);font-size:15px;line-height:1.45}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 140px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:grid;gap:16px}
+h1{font-family:var(--display);font-size:28px;line-height:1.1;margin:0;text-wrap:balance;letter-spacing:.01em}
+.unter{color:var(--leise);margin:4px 0 0}
+label.feld{display:grid;gap:6px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--leise)}
+input[type=text],input[type=search]{font:inherit;font-size:16px;color:var(--fg);background:var(--flaeche);
+  border:1px solid var(--linie);border-radius:10px;padding:11px 12px;width:100%;text-transform:none;letter-spacing:0}
+input:focus-visible,button:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--linie);background:var(--flaeche);color:var(--fg);
+  border-radius:999px;padding:7px 12px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--akzent);border-color:var(--akzent);color:var(--akzent-fg)}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.75;margin-left:4px}
+.genres{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.genres .chip{white-space:nowrap;font-weight:500}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.spiel{display:grid;grid-template-columns:auto auto 1fr auto;gap:12px;align-items:center;background:var(--flaeche);
+  border:1px solid var(--linie);border-radius:12px;padding:10px 12px;cursor:pointer;user-select:none}
+.spiel[aria-checked=true]{border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent)}
+.box{width:22px;height:22px;border-radius:6px;border:2px solid var(--linie);display:grid;place-items:center}
+.spiel[aria-checked=true] .box{background:var(--akzent);border-color:var(--akzent)}
+.spiel[aria-checked=true] .box::after{content:"";width:6px;height:11px;border:solid var(--akzent-fg);border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.titel{font-weight:600;min-width:0}
+.cover{width:70px;height:50px;max-width:100%;border-radius:6px;object-fit:cover;background:var(--linie);display:block}
+.spiel[aria-checked=true] .cover{outline:2px solid var(--akzent);outline-offset:1px}
+.meta{color:var(--leise);font-size:13px}
+.status{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.status.b{color:var(--bereit)} .status.f{color:var(--fehlt)}
+.leer{color:var(--leise);text-align:center;padding:24px 0}
+.leiste{position:fixed;left:0;right:0;bottom:0;background:var(--flaeche);border-top:1px solid var(--linie);
+  padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.leiste-in{max-width:640px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.zaehler{flex:1 1 140px;font-size:13px;color:var(--leise)}
+.zaehler b{color:var(--fg);font-size:18px;font-variant-numeric:tabular-nums}
+.knopf{font:inherit;font-weight:600;border-radius:10px;padding:11px 14px;cursor:pointer;text-decoration:none;
+  border:1px solid var(--linie);background:var(--flaeche);color:var(--fg);display:inline-flex;align-items:center;gap:8px}
+.knopf.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.knopf[aria-disabled=true]{opacity:.45;pointer-events:none}
+.hinweis{font-size:13px;color:var(--leise);min-height:1em}
+.vorschau{background:var(--flaeche);border:1px dashed var(--linie);border-radius:12px;padding:12px;font-size:13px;white-space:pre-wrap;color:var(--leise);margin:0}
+@media (prefers-reduced-motion:no-preference){.spiel{transition:border-color .12s}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <h1>Was zocken wir auf der LAN?</h1>
+    <p class="unter">Hak an, was du spielen willst, und schick deine Liste in die Gruppe. Was noch nicht auf dem Server liegt, wird vorher geladen.</p>
+  </header>
+
+  <label class="feld" for="name">Dein Name
+    <input type="text" id="name" placeholder="z. B. Sebastian" autocomplete="nickname">
+  </label>
+
+  <label class="feld" for="suche">Suchen
+    <input type="search" id="suche" placeholder="Spiel suchen …">
+  </label>
+
+  <div class="tabs" role="group" aria-label="Status">
+    <button class="chip" data-tab="alle" aria-pressed="true">Alle<span class="n" id="n-alle"></span></button>
+    <button class="chip" data-tab="b" aria-pressed="false">Auf dem Server<span class="n" id="n-b"></span></button>
+    <button class="chip" data-tab="f" aria-pressed="false">Noch nicht geladen<span class="n" id="n-f"></span></button>
+    <button class="chip" data-tab="meine" aria-pressed="false">Meine Auswahl<span class="n" id="n-meine"></span></button>
+  </div>
+  <div class="genres" id="genres" role="group" aria-label="Genre"></div>
+
+  <ul id="liste"></ul>
+
+  <details>
+    <summary class="meta" style="cursor:pointer">So sieht deine Nachricht aus</summary>
+    <pre class="vorschau" id="vorschau"></pre>
+  </details>
+</div>
+
+<div class="leiste">
+  <div class="leiste-in">
+    <div class="zaehler"><b id="anzahl">0</b> Spiele gewählt<br><span id="davon"></span></div>
+    <button class="knopf" id="kopieren" type="button">Kopieren</button>
+    <a class="knopf wa" id="senden" href="#" target="_blank" rel="noopener" aria-disabled="true">An WhatsApp senden</a>
+    <div class="hinweis" id="hinweis" aria-live="polite" style="flex-basis:100%"></div>
+  </div>
+</div>
+
+<script>
+const DATEN = {"bereit": [{"id": "7days", "t": "7 Days to Die", "g": "Ego-Shooter", "p": 8}, {"id": "aoe2", "t": "Age of Empires II (HD)", "g": "Echtzeit-Strategie", "p": 8}, {"id": "aoe3", "t": "Age of Empires III", "g": "Echtzeit-Strategie", "p": 8}, {"id": "avp", "t": "Aliens vs. Predator", "g": "Ego-Shooter", "p": 18}, {"id": "aliensfe", "t": "Aliens: Fireteam Elite", "g": "Ego-Shooter", "p": 4}, {"id": "amongus", "t": "Among Us", "g": "Taktikspiel", "p": 10}, {"id": "bf1942", "t": "Battlefield 1942", "g": "Ego-Shooter", "p": 64}, {"id": "bf2", "t": "Battlefield 2 Complete Edition", "g": "Ego-Shooter", "p": 64}, {"id": "bf2142", "t": "Battlefield 2142", "g": "Ego-Shooter", "p": 64}, {"id": "blur", "t": "Blur", "g": "Racing", "p": 20}, {"id": "cod2", "t": "Call of Duty 2", "g": "Ego-Shooter", "p": 20}, {"id": "cod4", "t": "Call of Duty 4: Modern Warfare", "g": "Ego-Shooter", "p": 20}, {"id": "coduo", "t": "Call of Duty: United Offensive", "g": "Ego-Shooter", "p": 32}, {"id": "coj2", "t": "Call of Juarez: Bound In Blood", "g": "Ego-Shooter", "p": 12}, {"id": "cncremaster", "t": "Command & Conquer - Remastered", "g": "Echtzeit-Strategie", "p": 8}, {"id": "cncgen", "t": "Command and Conquer: Generals - Zero Hour", "g": "Echtzeit-Strategie", "p": 8}, {"id": "csgo", "t": "Counter-Strike: Global Offensive", "g": "Ego-Shooter", "p": 32}, {"id": "css", "t": "Counter-Strike: Source", "g": "Ego-Shooter", "p": 64}, {"id": "dods", "t": "Day of Defeat: Source", "g": "Ego-Shooter", "p": 32}, {"id": "daylight", "t": "Dead by Daylight", "g": "Survival", "p": 5}, {"id": "demigod", "t": "Demigod", "g": "Hack and Slay", "p": 10}, {"id": "d3", "t": "Diablo III: Reaper of Souls", "g": "Hack and Slay", "p": 4}, {"id": "siedler2", "t": "Die Siedler II – Die nächste Generation", "g": "Echtzeit-Strategie", "p": 8}, {"id": "doom3", "t": "DOOM 3: BFG Edition", "g": "Ego-Shooter", "p": 8}, {"id": "dunlords", "t": "Dungeon Lords (Steam Edition)", "g": "Hack and Slay", "p": 8}, {"id": "flat2", "t": "FlatOut 2", "g": "Racing", "p": 8}, {"id": "gangbeasts", "t": "Gang Beasts", "g": "Beat em-up", "p": 8}, {"id": "garrysmod", "t": "Garry's Mod", "g": "Simulation", "p": 32}, {"id": "genital", "t": "Genital Jousting", "g": "Casual", "p": 8}, {"id": "goldsrc", "t": "Half-Life / Counter-Strike (Goldsrc)", "g": "Ego-Shooter", "p": 32}, {"id": "hl2dm", "t": "Half-Life 2: Deathmatch", "g": "Ego-Shooter", "p": 20}, {"id": "hf", "t": "Homefront", "g": "Ego-Shooter", "p": 32}, {"id": "kfloor2", "t": "Killing Floor 2", "g": "Hack and Slay", "p": 6}, {"id": "l4d2", "t": "Left 4 Dead 2", "g": "Ego-Shooter", "p": 8}, {"id": "magicka", "t": "Magicka", "g": "Hack and Slay", "p": 4}, {"id": "mkart", "t": "Mario Kart 8 Deluxe", "g": "Racing", "p": 8}, {"id": "minecraft", "t": "Minecraft", "g": "Open-World-Adventure", "p": 200}, {"id": "mordhau", "t": "Mordhau", "g": "Hack and Slay", "p": 64}, {"id": "nfsu2", "t": "Need for Speed: Underground 2", "g": "Racing", "p": 8}, {"id": "nms", "t": "No Man's Sky", "g": "Ego-Shooter", "p": 32}, {"id": "pay2", "t": "Payday 2", "g": "Ego-Shooter", "p": 4}, {"id": "plaque", "t": "Plague Inc: Evolved", "g": "Puzzle", "p": 2}, {"id": "postal2", "t": "Postal 2", "g": "Ego-Shooter", "p": 16}, {"id": "quake3", "t": "Quake 3 Arena", "g": "Ego-Shooter", "p": 16}, {"id": "ron", "t": "Ready or Not", "g": "Ego-Shooter", "p": 5}, {"id": "sfactory", "t": "Satisfactory", "g": "Survival", "p": 4}, {"id": "ssam4", "t": "Serious Sam 4", "g": "Ego-Shooter", "p": 4}, {"id": "spellbreak", "t": "Spellbreak", "g": "Third-person Shooter", "p": 42}, {"id": "swjkja", "t": "Star Wars Jedi Knight: Jedi Academy", "g": "Ego-Shooter", "p": 32}, {"id": "swbf2", "t": "Star Wars: Battlefront II", "g": "Hack and Slay", "p": 64}, {"id": "swracer", "t": "Star Wars: Episode I Racer", "g": "Racing", "p": 8}, {"id": "stronghold", "t": "Stronghold Crusader HD", "g": "Echtzeit-Strategie", "p": 8}, {"id": "svencoop", "t": "Sven Co-Op", "g": "Ego-Shooter", "p": 32}, {"id": "tf2", "t": "Team Fortress 2", "g": "Ego-Shooter", "p": 20}, {"id": "lotrbfme2", "t": "The Battle for Middle-earth II: Rise of Witch-king", "g": "Echtzeit-Strategie", "p": 8}, {"id": "forest", "t": "The Forest", "g": "Survival", "p": 8}, {"id": "tfall2", "t": "Titanfall 2", "g": "Ego-Shooter", "p": 16}, {"id": "siege", "t": "Tom Clancys Rainbow Six: Siege", "g": "Ego-Shooter", "p": 10}, {"id": "vegas2", "t": "Tom Clancys Rainbow Six: Vegas 2", "g": "Ego-Shooter", "p": 14}, {"id": "trackma2020", "t": "Trackmania 2020", "g": "Racing", "p": 8}, {"id": "trackmania", "t": "Trackmania Nations Forever", "g": "Racing", "p": "10+"}, {"id": "ut99", "t": "Unreal Tournament", "g": "Ego-Shooter", "p": 32}, {"id": "ut2004", "t": "Unreal Tournament 2004", "g": "Ego-Shooter", "p": 32}, {"id": "ut3", "t": "Unreal Tournament 3", "g": "Hack and Slay", "p": 24}, {"id": "vcleanup", "t": "Viscera Cleanup Detail", "g": "Ego-Shooter", "p": 32}, {"id": "wc3", "t": "Warcraft 3: The Frozen Throne", "g": "Echtzeit-Strategie", "p": 12}, {"id": "witch", "t": "Witch It", "g": "Ego-Shooter", "p": 16}, {"id": "woc", "t": "World in Conflict", "g": "Echtzeit-Strategie", "p": 16}, {"id": "worms", "t": "Worms World Party - Remastered ", "g": "Taktikspiel", "p": 6}, {"id": "wreckfest", "t": "Wreckfest", "g": "Racing", "p": 24}], "fehlt": [{"id": "1nsane", "t": "1NSANE", "g": "Racing", "p": 8}, {"id": "8bit", "t": "8-Bit Armies", "g": "Echtzeit-Strategie", "p": 8}, {"id": "9bit", "t": "9-Bit Armies: A Bit Too Far", "g": "Echtzeit-Strategie", "p": 8}, {"id": "aomytex", "t": "Age of Mythology - Titans", "g": "Echtzeit-Strategie", "p": 12}, {"id": "alienswarm", "t": "Alien Swarm: Reactive Drop", "g": "Top-Down Shooter", "p": 8}, {"id": "avp2000", "t": "Aliens vs. Predator Classic 2000 (AvPx Enhanced)", "g": "Ego-Shooter", "p": 9}, {"id": "anno1404", "t": "Anno 1404 (History Edition)", "g": "Echtzeit-Strategie", "p": 4}, {"id": "anno1701", "t": "Anno 1701 (History Edition)", "g": "Echtzeit-Strategie", "p": 4}, {"id": "armagetron", "t": "Armagetron Advanced", "g": "Racing", "p": 20}, {"id": "aexigo", "t": "Armies of Exigo", "g": "Echtzeit-Strategie", "p": 12}, {"id": "assetto", "t": "Assetto Corsa", "g": "Racing", "p": 24}, {"id": "barotrauma", "t": "Barotrauma", "g": "Casual", "p": 16}, {"id": "battalion", "t": "Battalion 1944", "g": "Ego-Shooter", "p": 16}, {"id": "bf3", "t": "Battlefield 3", "g": "Ego-Shooter", "p": 64}, {"id": "bf4", "t": "Battlefield 4", "g": "Ego-Shooter", "p": 66}, {"id": "bfhardline", "t": "Battlefield Hardline", "g": "Ego-Shooter", "p": 64}, {"id": "bfbc2", "t": "Battlefield: Bad Company 2", "g": "Ego-Shooter", "p": 32}, {"id": "bms", "t": "Black Mesa Definitive Edition", "g": "Hack and Slay", "p": 32}, {"id": "blaze", "t": "BlazeRush", "g": "Racing", "p": 8}, {"id": "blobby", "t": "Blobby Volley 2", "g": "Taktikspiel", "p": 2}, {"id": "blood2", "t": "Blood II: The Chosen", "g": "Ego-Shooter", "p": 32}, {"id": "bloodsports", "t": "Bloodsports.TV", "g": "MOBA", "p": 5}, {"id": "blands2", "t": "Borderlands 2", "g": "Ego-Shooter", "p": 4}, {"id": "cdogs", "t": "C-Dogs SDL (Cyberdogs Remake)", "g": "Top-Down Shooter", "p": 4}, {"id": "cod7", "t": "Call of Duty: Black Ops", "g": "Ego-Shooter", "p": 18}, {"id": "cod6", "t": "Call of Duty: Modern Warfare 2", "g": "Ego-Shooter", "p": 18}, {"id": "cod8", "t": "Call of Duty: Modern Warfare 3", "g": "Ego-Shooter", "p": 18}, {"id": "cod5", "t": "Call of Duty: World at War", "g": "Ego-Shooter", "p": 20}, {"id": "cod14", "t": "Call of Duty: WWII", "g": "Ego-Shooter", "p": 48}, {"id": "carmarein", "t": "Carmageddon Reincarnation", "g": "Racing", "p": 32}, {"id": "chivalry", "t": "Chivalry: Medieval Warfare", "g": "Hack and Slay", "p": 16}, {"id": "civ4", "t": "Civilization IV", "g": "Echtzeit-Strategie", "p": 8}, {"id": "civ5", "t": "Civilization V", "g": "Echtzeit-Strategie", "p": 8}, {"id": "cncra2", "t": "Command & Conquer - Red Alert 2", "g": "Echtzeit-Strategie", "p": 8}, {"id": "cncra3", "t": "Command & Conquer - Red Alert 3 / Generals Evolution", "g": "Echtzeit-Strategie", "p": 8}, {"id": "tibcri2", "t": "Command & Conquer: Tiberium Crisis 2  - Down Fall", "g": "Echtzeit-Strategie", "p": 8}, {"id": "cnctw", "t": "Command and Conquer 3: Tiberium Wars", "g": "Echtzeit-Strategie", "p": 8}, {"id": "cnc4", "t": "Command and Conquer 4: Tiberian Twilight", "g": "Echtzeit-Strategie", "p": 4}, {"id": "coh", "t": "Company of Heroes", "g": "Echtzeit-Strategie", "p": 8}, {"id": "coh2", "t": "Company of Heroes 2", "g": "Echtzeit-Strategie", "p": 8}, {"id": "cosmo", "t": "Cosmoteer", "g": "Simulation", "p": 8}, {"id": "cossacks", "t": "Cossacks 3", "g": "Echtzeit-Strategie", "p": 8}, {"id": "crashday", "t": "Crashday Redline Edition", "g": "Racing", "p": 8}, {"id": "cube2", "t": "Cube 2 - Sauerbraten", "g": "Hack and Slay", "p": 32}, {"id": "island", "t": "Dead Island Definitive Edition", "g": "Ego-Shooter", "p": 4}, {"id": "deathrally", "t": "Death Rally", "g": "Racing", "p": 20}, {"id": "drgalactic", "t": "Deep Rock Galactic", "g": "Simulation", "p": 4}, {"id": "demonstar", "t": "Demonstar", "g": "Top-Down Shooter", "p": 2}, {"id": "d2", "t": "Diablo II: Lord of Destruction", "g": "Hack and Slay", "p": 8}, {"id": "d2r", "t": "Diablo II: Resurrected", "g": "Hack and Slay", "p": 8}, {"id": "d1", "t": "Diablo: Hellfire (DevilutionX)", "g": "Hack and Slay", "p": 9}, {"id": "dirt3", "t": "DiRT 3", "g": "Racing", "p": 8}, {"id": "divos2", "t": "Divinity: Original Sin 2 - Definitive Edition", "g": "Hack and Slay", "p": 4}, {"id": "doomherex", "t": "Doom / Heretic / Hexen", "g": "Ego-Shooter", "p": 4}, {"id": "duke3d", "t": "Duke Nukem 3D", "g": "Ego-Shooter", "p": 8}, {"id": "dunel", "t": "Dune Legacy", "g": "Echtzeit-Strategie", "p": 6}, {"id": "ddefenders", "t": "Dungeon Defenders", "g": "Ego-Shooter", "p": 8}, {"id": "dunsiege", "t": "Dungeon Siege", "g": "Hack and Slay", "p": 8}, {"id": "dunsiege2", "t": "Dungeon Siege II: Broken World", "g": "Hack and Slay", "p": 8}, {"id": "earthfall", "t": "Earthfall", "g": "Ego-Shooter", "p": 4}, {"id": "empearth3", "t": "Empire Earth 3", "g": "Echtzeit-Strategie", "p": 8}, {"id": "empires", "t": "Empires - Dawn of the Modern World", "g": "Echtzeit-Strategie", "p": 8}, {"id": "factorio", "t": "Factorio", "g": "Survival", "p": 65535}, {"id": "farcry", "t": "Far Cry", "g": "Ego-Shooter", "p": 18}, {"id": "fc2", "t": "Far Cry 2", "g": "Ego-Shooter", "p": 18}, {"id": "forts", "t": "Forts", "g": "Echtzeit-Strategie", "p": 8}, {"id": "futurecop", "t": "Future Cop L.A.P.D.", "g": "Third-person Shooter", "p": 2}, {"id": "gesource", "t": "GoldenEye: Source", "g": "Ego-Shooter", "p": 16}, {"id": "golfit", "t": "Golf It!", "g": "Casual", "p": 8}, {"id": "gta2", "t": "Grand Theft Auto 2", "g": "Top-Down Shooter", "p": 8}, {"id": "gtaiv", "t": "Grand Theft Auto IV", "g": "Simulation", "p": 32}, {"id": "gtasa", "t": "Grand Theft Auto: San Andreas (MTA)", "g": "Simulation", "p": "100+"}, {"id": "ggoo", "t": "Grey Goo", "g": "Echtzeit-Strategie", "p": 4}, {"id": "gdawn", "t": "Grim Dawn", "g": "Hack and Slay", "p": 4}, {"id": "grip", "t": "GRIP: Combat Racing", "g": "Racing", "p": 10}, {"id": "gfreborn", "t": "Gunfire Reborn", "g": "Ego-Shooter", "p": 4}, {"id": "hoi4", "t": "Hearts of Iron IV", "g": "Echtzeit-Strategie", "p": 32}, {"id": "human", "t": "Human Fall Flat", "g": "Casual", "p": 8}, {"id": "ktane", "t": "Keep Talking and Nobody Explodes", "g": "Puzzle", "p": "2+"}, {"id": "kopanito", "t": "Kopanito All-Stars Soccer", "g": "Sport", "p": 10}, {"id": "lol420", "t": "League of Legends (4.20)", "g": "MOBA", "p": 12}, {"id": "mechwar5", "t": "Mechwarrior 5: Mercenaries", "g": "Ego-Shooter", "p": 4}, {"id": "mmrx", "t": "Mini Motor Racing X", "g": "Racing", "p": 4}, {"id": "monhunter", "t": "Monster Hunter - World", "g": "Ego-Shooter", "p": 4}, {"id": "nase2", "t": "Natural Selection 2", "g": "Ego-Shooter", "p": 12}, {"id": "nfs3", "t": "Need for Speed III: Hot Pursuit", "g": "Racing", "p": 8}, {"id": "nfsmost", "t": "Need for Speed: Most Wanted (Redux V3)", "g": "Racing", "p": 4}, {"id": "nid2", "t": "Nidhogg 2", "g": "Casual", "p": 8}, {"id": "northgard", "t": "Northgard", "g": "Echtzeit-Strategie", "p": 6}, {"id": "opencnc", "t": "OpenRA", "g": "Echtzeit-Strategie", "p": 8}, {"id": "ocooked2", "t": "Overcooked 2", "g": "Puzzle", "p": 4}, {"id": "overload", "t": "Overload", "g": "Luftkampf", "p": 8}, {"id": "ppanic", "t": "Party Panic", "g": "Casual", "p": 4}, {"id": "patitans", "t": "Planetary Annihilation: TITANS", "g": "Echtzeit-Strategie", "p": 64}, {"id": "pknights", "t": "Portal Knights", "g": "Open-World-Adventure", "p": 4}, {"id": "praetorians", "t": "Praetorians HD", "g": "Echtzeit-Strategie", "p": 8}, {"id": "pummel", "t": "Pummel Party", "g": "Puzzle", "p": 8}, {"id": "raft", "t": "Raft", "g": "Survival", "p": 4}, {"id": "ratchet", "t": "Ratchet - Deadlocked", "g": "Third-person Shooter", "p": 10}, {"id": "revolt", "t": "Re-Volt", "g": "Racing", "p": 8}, {"id": "redout", "t": "Redout: Enhanced Edition", "g": "Racing", "p": 12}, {"id": "renegade", "t": "Renegade Ops", "g": "Top-Down Shooter", "p": 4}, {"id": "rise2", "t": "Rise of Nations: Extended Edition", "g": "Echtzeit-Strategie", "p": 8}, {"id": "rocket", "t": "Rocket League", "g": "Sport", "p": 8}, {"id": "rune", "t": "Rune", "g": "Hack and Slay", "p": 20}, {"id": "mechanic", "t": "Scrap Mechanic", "g": "Simulation", "p": 8}, {"id": "ssam", "t": "Serious Sam - The Second Encounter", "g": "Ego-Shooter", "p": 16}, {"id": "ssamfusion", "t": "Serious Sam Fusion", "g": "Ego-Shooter", "p": 16}, {"id": "ssam2", "t": "Serious Sam II", "g": "Ego-Shooter", "p": 16}, {"id": "shootmania", "t": "ShootMania Storm", "g": "Ego-Shooter", "p": 16}, {"id": "skydrift", "t": "SkyDrift", "g": "Luftkampf", "p": 8}, {"id": "slackers", "t": "Slackers - Carts of Glory", "g": "Racing", "p": 8}, {"id": "snakeybus", "t": "Snakeybus", "g": "Casual", "p": 4}, {"id": "spaceeng", "t": "Space Engineers", "g": "Ego-Shooter", "p": 64}, {"id": "mudrunner", "t": "Spintires: MudRunner", "g": "Simulation", "p": 4}, {"id": "splitsecond", "t": "Split/Second", "g": "Racing", "p": 8}, {"id": "stvoyef", "t": "Star Trek: Voyager - Elite Force", "g": "Hack and Slay", "p": 32}, {"id": "scremastered", "t": "StarCraft: Remastered", "g": "Echtzeit-Strategie", "p": 8}, {"id": "stardew", "t": "Stardew Valley", "g": "Casual", "p": 4}, {"id": "stickfight", "t": "Stick Fight: The Game", "g": "Casual", "p": 4}, {"id": "sudstrike4", "t": "Sudden Strike 4", "g": "Echtzeit-Strategie", "p": 8}, {"id": "supra", "t": "Supraball", "g": "Sport", "p": 10}, {"id": "supreme2", "t": "Supreme Commander 2", "g": "Echtzeit-Strategie", "p": 8}, {"id": "supremefa", "t": "Supreme Commander: Forged Alliance", "g": "Echtzeit-Strategie", "p": 8}, {"id": "swat4", "t": "SWAT 4", "g": "Hack and Slay", "p": 10}, {"id": "tempest", "t": "Tempest Rising", "g": "Echtzeit-Strategie", "p": 6}, {"id": "settlers6", "t": "The Settlers: Rise of an Empire", "g": "Echtzeit-Strategie", "p": 6}, {"id": "thunder", "t": "Thunder Tier One", "g": "Top-Down Shooter", "p": 7}, {"id": "titanquest", "t": "Titan Quest: Anniversary Edition", "g": "Hack and Slay", "p": 4}, {"id": "hawx2", "t": "Tom Clancys H.A.W.X. 2", "g": "Luftkampf", "p": 8}, {"id": "tlight2", "t": "Torchlight II", "g": "Hack and Slay", "p": 6}, {"id": "totala", "t": "Total Annihilation", "g": "Echtzeit-Strategie", "p": 10}, {"id": "tabsim", "t": "Totally Accurate Battle Simulator", "g": "Simulation", "p": 2}, {"id": "toxikk", "t": "TOXIKK", "g": "Ego-Shooter", "p": 16}, {"id": "toybox", "t": "Toybox Turbos", "g": "Racing", "p": 4}, {"id": "ttowers", "t": "Tricky Towers", "g": "Puzzle", "p": 4}, {"id": "uchicken", "t": "Ultimate Chicken Horse", "g": "Casual", "p": 4}, {"id": "vrising", "t": "V Rising", "g": "Hack and Slay", "p": 60}, {"id": "valheim", "t": "Valheim", "g": "Survival", "p": 10}, {"id": "viking", "t": "Viking Squad", "g": "Beat em-up", "p": 3}, {"id": "wc3reforged", "t": "Warcraft III: Reforged", "g": "Echtzeit-Strategie", "p": 12}, {"id": "dowss", "t": "Warhammer 40.000: Dawn of War - Soulstorm", "g": "Echtzeit-Strategie", "p": 8}, {"id": "etlegacy", "t": "Wolfenstein: Enemy Territory  / ET: Legacy", "g": "Hack and Slay", "p": 64}, {"id": "youngblood", "t": "Wolfenstein: Youngblood", "g": "Hack and Slay", "p": 2}]};
+const spiele = [...DATEN.bereit.map(s => ({...s, b: true})), ...DATEN.fehlt.map(s => ({...s, b: false}))]
+  .sort((x, y) => x.t.localeCompare(y.t, "de"));
+const gewaehlt = new Set();
+let tab = "alle", genre = "";
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+
+try { JSON.parse(localStorage.getItem("wunsch") || "[]").forEach(id => gewaehlt.add(id)); $("name").value = localStorage.getItem("wunsch-name") || ""; } catch (e) {}
+function merken() { try { localStorage.setItem("wunsch", JSON.stringify([...gewaehlt])); localStorage.setItem("wunsch-name", $("name").value); } catch (e) {} }
+
+const genres = [...new Set(spiele.map(s => s.g).filter(Boolean))].sort((a, b) => a.localeCompare(b, "de"));
+$("genres").innerHTML = ['<button class="chip" data-genre="" aria-pressed="true">Alle Genres</button>',
+  ...genres.map(g => `<button class="chip" data-genre="${esc(g)}" aria-pressed="false">${esc(g)}</button>`)].join("");
+
+function passt(s) {
+  const q = $("suche").value.trim().toLowerCase();
+  if (q && !s.t.toLowerCase().includes(q)) return false;
+  if (genre && s.g !== genre) return false;
+  if (tab === "b") return s.b;
+  if (tab === "f") return !s.b;
+  if (tab === "meine") return gewaehlt.has(s.id);
+  return true;
+}
+
+function zeichnen() {
+  const treffer = spiele.filter(passt);
+  $("liste").innerHTML = treffer.length ? treffer.map(s => `
+    <li class="spiel" role="checkbox" tabindex="0" data-id="${esc(s.id)}" aria-checked="${gewaehlt.has(s.id)}">
+      <span class="box" aria-hidden="true"></span>
+      <img class="cover" src="cover/${esc(s.id)}.jpg" alt="" loading="lazy" width="70" height="50">
+      <span class="titel">${esc(s.t)}<br><span class="meta">${[esc(s.g), s.p ? "bis " + s.p + " Spieler" : ""].filter(Boolean).join(" · ")}</span></span>
+      <span class="status ${s.b ? "b" : "f"}">${s.b ? "bereit" : "laden"}</span>
+    </li>`).join("") : '<li class="leer">Kein Spiel gefunden.</li>';
+  zaehlen();
+}
+
+function nachricht() {
+  const name = $("name").value.trim() || "Ich";
+  const wahl = spiele.filter(s => gewaehlt.has(s.id));
+  const b = wahl.filter(s => s.b).map(s => "• " + s.t), f = wahl.filter(s => !s.b).map(s => "• " + s.t);
+  let t = `🎮 LAN-Wünsche von ${name} (${wahl.length} Spiele)\n`;
+  if (b.length) t += `\n✅ Schon auf dem Server:\n${b.join("\n")}\n`;
+  if (f.length) t += `\n⬇️ Bitte vorher laden:\n${f.join("\n")}\n`;
+  return t;
+}
+
+function zaehlen() {
+  const wahl = spiele.filter(s => gewaehlt.has(s.id)), f = wahl.filter(s => !s.b).length;
+  $("anzahl").textContent = wahl.length;
+  $("davon").textContent = wahl.length ? `${wahl.length - f} bereit, ${f} müssen geladen werden` : "Tipp Spiele in der Liste an";
+  $("n-alle").textContent = spiele.length;
+  $("n-b").textContent = DATEN.bereit.length;
+  $("n-f").textContent = DATEN.fehlt.length;
+  $("n-meine").textContent = wahl.length;
+  const text = nachricht();
+  $("vorschau").textContent = wahl.length ? text : "Noch nichts gewählt.";
+  $("senden").href = "https://wa.me/?text=" + encodeURIComponent(text);
+  $("senden").setAttribute("aria-disabled", wahl.length ? "false" : "true");
+}
+
+function umschalten(li) {
+  const id = li.dataset.id;
+  gewaehlt.has(id) ? gewaehlt.delete(id) : gewaehlt.add(id);
+  li.setAttribute("aria-checked", gewaehlt.has(id));
+  merken();
+  tab === "meine" ? zeichnen() : zaehlen();
+}
+
+$("liste").addEventListener("click", e => { const li = e.target.closest(".spiel"); if (li) umschalten(li); });
+$("liste").addEventListener("keydown", e => { const li = e.target.closest(".spiel"); if (li && (e.key === " " || e.key === "Enter")) { e.preventDefault(); umschalten(li); } });
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]"); if (!b) return;
+  tab = b.dataset.tab; document.querySelectorAll("[data-tab]").forEach(x => x.setAttribute("aria-pressed", x === b)); zeichnen();
+});
+$("genres").addEventListener("click", e => {
+  const b = e.target.closest("[data-genre]"); if (!b) return;
+  genre = b.dataset.genre; document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", x === b)); zeichnen();
+});
+$("suche").addEventListener("input", zeichnen);
+$("name").addEventListener("input", () => { merken(); zaehlen(); });
+$("kopieren").addEventListener("click", () => {
+  const text = nachricht();
+  navigator.clipboard.writeText(text).then(() => $("hinweis").textContent = "Kopiert. In WhatsApp einfügen und senden.")
+    .catch(() => { document.querySelector("details").open = true; getSelection().selectAllChildren($("vorschau")); $("hinweis").textContent = "Text ist markiert, jetzt kopieren."; });
+});
+zeichnen();
+</script>
+
+</body>
+</html>
